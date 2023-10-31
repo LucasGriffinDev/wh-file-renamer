@@ -34,8 +34,12 @@ const processImageFolder = (folderPath) => {
         if (item.includes('Sign')) {
             fs.unlinkSync(itemPath);
         }
+
+        // Also handle renaming inside 'images' folder
+        renameFile(item, itemPath, folderPath);  // Added this line
     }
 };
+
 
 const renameFile = (item, itemPath, folderPath) => {
     const renameMap = [
@@ -60,8 +64,6 @@ const renameFile = (item, itemPath, folderPath) => {
         } else {
             newPath = path.join(folderPath, mapping.newName + path.extname(item));  // Adding file extension
         }
-        console.log("Item Path:", itemPath);
-        console.log("New Path:", newPath);
 
         try {
             fs.renameSync(itemPath, newPath);
