@@ -28,7 +28,7 @@ async function annotatePDF(targetFolderPath) {
             color: grayRectangle,
         });
         const pdfBytesModified = await pdfDoc.save();
-        await fsPromises.writeFile(path.join(targetFolderPath, '1. Nomination Form_annotated.pdf'), pdfBytesModified);
+        await fsPromises.writeFile(pdfPath, pdfBytesModified);
     } catch (err) {
         console.error("Failed to annotate PDF:", err);
     }
