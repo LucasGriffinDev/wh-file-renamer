@@ -7,9 +7,10 @@ step 1.
 
 
 Step 1:
-look in downloads folder for a folder with 'Chromagen' in the folder name
+look in downloads folder of the os mac for a folder with 6 digits in it. these may be preceded with "_" or surrounded with ().
 
-search all files in that folder and either delete or rename (or ignore) if they meet certain conditions:
+
+search all files in that folder and subfolders, and rename, rename then move, or just delete, depending on the following conditions.
 
 note, condition is case sensitive
 
@@ -21,7 +22,8 @@ Contains "siteAssessment" = "2. Site Assessment"
 Contains "receipt" = "4. Receipt"
 Contains "Coc"  = "5. CoC"
 Contains "postImplementation" = "6. Post Implementation"
-Contains i"mage2" = "7. Proof of Decommission"
+Contains "image2" move this file to it's parent folder,
+    then rename it "7. Proof of Decommission",
 contains: "Compliance Form" = "0. Compliance Form.pdf"
 Contains: "Calculation Output" = "0. Calculation Output (HEERs)"
 
@@ -31,6 +33,7 @@ note, sometimes not all the files are present
 
 Delete:
 Contains nswCOC = delete
-In images folder:
+In images folder, which will be inside the folder we are working in.
 contains Sign = delete
 (there are meant to be 3 files with Sign in their file name, but there may be zero)
+

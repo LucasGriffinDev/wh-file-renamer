@@ -1,96 +1,85 @@
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
-const pdfParse = require('pdf-parse');
 
 const downloadsPath = path.join(os.homedir(), 'Downloads');
 
-const parsePDF = async (filePath) => {
-    const dataBuffer = fs.readFileSync(filePath);
-    const data = await pdfParse(dataBuffer);
-    const lines = data.text.split('\n');
-    const customerLine = lines.find(line => line.startsWith('Customer:'));
-    if (customerLine) {
-        const customerName = customerLine.replace('Customer:', '').trim();
-        console.log(`Extracted customer name: ${customerName}`);
-        return customerName;
-    }
-    return null;
-};
-
-const renameFolder = (oldFolderPath, customerName) => {
-    // Extracting the 6-digit number from the old folder name
-    const match = oldFolderPath.match(/\d{6}/);
-    if (!match) return;
-
-    const sixDigitNumber = match[0];
-    const newFolderName = `${customerName} (${sixDigitNumber})`;
-    const newFolderPath = path.join(path.dirname(oldFolderPath), newFolderName);
-
-    // Rename the folder
-    fs.renameSync(oldFolderPath, newFolderPath);
-    return newFolderPath;
-};
-
-const getChromagenFolder = () => {
-    try {
-        const folders = fs.readdirSync(downloadsPath);
-        return folders.find(folder => /\d{6}/.test(folder));
-    } catch (err) {
-        console.error(`Error reading the directory: ${err}`);
-    }
-};
-
-const handleFiles = async (folderPath) => {
+const processFiles = (folderPath) => {
     const items = fs.readdirSync(folderPath);
-
     for (const item of items) {
         const itemPath = path.join(folderPath, item);
         const stats = fs.statSync(itemPath);
 
-        if (item.includes("3. Tax Invoice")) {
-            const customerName = await parsePDF(itemPath);
-            if (customerName) return customerName;        }
-
-        // If item is a directory, recurse into it
+        // Handling Directories
         if (stats.isDirectory()) {
-            handleFiles(itemPath);
-            return;
+            if (item === 'images') {
+                processImageFolder(itemPath);
+            } else {
+                processFiles(itemPath);
+            }
+            continue;
         }
 
-
-
-        // Rename conditions
-        if (item.includes("Screen Shot")) fs.renameSync(itemPath, path.join(folderPath, "0. Nomination form to OES.png"));
-        else if (item.includes("nominationForm")) fs.renameSync(itemPath, path.join(folderPath, "1. Nomination Form.pdf"));
-        else if (item.includes("siteAssessment")) fs.renameSync(itemPath, path.join(folderPath, "2. Site Assessment.pdf"));
-        else if (item.includes("taxInvoice")) fs.renameSync(itemPath, path.join(folderPath, "3. Tax Invoice.pdf"));
-        else if (item.includes("receipt")) fs.renameSync(itemPath, path.join(folderPath, "4. Receipt.pdf"));
-        else if (item.includes("Coc")) fs.renameSync(itemPath, path.join(folderPath, "5. CoC.pdf"));
-        else if (item.includes("postImplementation")) fs.renameSync(itemPath, path.join(folderPath, "6. Post Implementation.pdf"));
-        else if (item.includes("image2")) fs.renameSync(itemPath, path.join(folderPath, "7. Proof of Decommission.pdf"));
-        else if (item.includes("Compliance Form")) fs.renameSync(itemPath, path.join(folderPath, "0. Compliance Form.pdf"));
-        else if (item.includes("Calculation Output")) fs.renameSync(itemPath, path.join(folderPath, "0. Calculation Output (HEERs).pdf"));
-
-        // Delete conditions
-        else if (item.includes("nswCOC")) fs.unlinkSync(itemPath);
-        else if (folderPath.includes('images') && item.includes('Sign')) fs.unlinkSync(itemPath);
-    };
+        // File renaming conditions
+        renameFile(item, itemPath, folderPath);
+    }
 };
 
-const main = async () => {
-    const chromagenFolder = getChromagenFolder();
-    if (!chromagenFolder) {
-        console.log("Chromagen folder not found");
+const processImageFolder = (folderPath) => {
+    const items = fs.readdirSync(folderPath);
+    for (const item of items) {
+        const itemPath = path.join(folderPath, item);
+
+        // Delete conditions
+        if (item.includes('Sign')) {
+            fs.unlinkSync(itemPath);
+        }
+    }
+};
+
+const renameFile = (item, itemPath, folderPath) => {
+    const renameMap = [
+        { condition: 'Screen Shot', newName: '0. Nomination form to OES' },
+        { condition: 'nominationForm', newName: '1. Nomination Form' },
+        { condition: 'siteAssessment', newName: '2. Site Assessment' },
+        { condition: 'taxInvoice', newName: '3. Tax Invoice' },
+        { condition: 'receipt', newName: '4. Proof of Payment' },
+        { condition: 'Coc', newName: '5. CoC' },
+        { condition: 'postImplementation', newName: '6. Post Implementation' },
+        { condition: 'image2', newName: '7. Proof of Decommission', moveToParent: true },
+        { condition: 'Compliance Form', newName: '0. Compliance Form.pdf' },
+        { condition: 'Calculation Output', newName: '0. Calculation Output (HEERs)' },
+    ];
+
+    const mapping = renameMap.find((map) => item.includes(map.condition));
+    if (mapping) {
+        let newPath;
+        if (mapping.moveToParent) {
+            const parentFolderPath = path.dirname(folderPath);
+            newPath = path.join(parentFolderPath, mapping.newName + path.extname(item));  // Adding file extension
+        } else {
+            newPath = path.join(folderPath, mapping.newName + path.extname(item));  // Adding file extension
+        }
+        fs.renameSync(itemPath, newPath);
+    }
+
+    // Delete conditions
+    if (item.includes('nswCOC')) {
+        fs.unlinkSync(itemPath);
+    }
+};
+
+const main = () => {
+    const folders = fs.readdirSync(downloadsPath);
+    const targetFolder = folders.find((folder) => /\d{6}/.test(folder));
+
+    if (!targetFolder) {
+        console.log('Target folder not found.');
         return;
     }
 
-    let chromagenFolderPath = path.join(downloadsPath, chromagenFolder);
-    const customerName = await handleFiles(chromagenFolderPath);
-    if (customerName) {
-        chromagenFolderPath = renameFolder(chromagenFolderPath, customerName);
-    }
-
+    const targetFolderPath = path.join(downloadsPath, targetFolder);
+    processFiles(targetFolderPath);
 };
 
-main()
+main();
