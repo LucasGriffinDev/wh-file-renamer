@@ -74,8 +74,7 @@ const renameFile = (item, itemPath, folderPath) => {
 
     // Delete conditions
     if (item.includes('nswCOC')) {
-        fs.unlinkSync(itemPath);
-    }
+        fs.unlinkSync(itemPath);}
 };
 
 const main = () => {
