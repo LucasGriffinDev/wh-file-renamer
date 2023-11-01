@@ -7,9 +7,10 @@ const pdfParse = require('pdf-parse');
 const chokidar = require('chokidar');
 
 
-
 const downloadsPath = path.join(os.homedir(), 'Downloads');
 const desktopPath = path.join(os.homedir(), 'Desktop');
+
+
 
 // function to annotate the 1. Nomination form to cover the incorrectly ticked box:
 
@@ -23,9 +24,9 @@ async function annotatePDF(targetFolderPath) {
         const grayCode = 0.92
         const grayRectangle = rgb(grayCode, grayCode, grayCode);
         firstPage.drawRectangle({
-            x: 305,
+            x: 300,
             y: 419,
-            width: 20,
+            width: 22,
             height: 19,
             color: grayRectangle,
         });
@@ -188,20 +189,36 @@ const watcher = chokidar.watch(downloadsPath, {
 
 watcher
     .on('add', path => {
-        console.log(`File ${path} has been added.`);
-        main();
+        if (!path.endsWith('.zip')) {
+            console.log(`File ${path} has been added.`);
+            main();
+        } else {
+            console.log(`Ignoring .zip file: ${path}`);
+        }
     })
 
     .on('unlink', path => {
-        console.log(`File ${path} has been removed.`);
-        main();
+        if (!path.endsWith('.zip')) {
+            console.log(`File ${path} has been removed.`);
+            main();
+        } else {
+            console.log(`Ignoring .zip file: ${path}`);
+        }
     });
+
+
 
 const main = async () => {
 
-    const folders = fs.readdirSync(downloadsPath);
-    const targetFolder = folders.find((folder) => /\d{6}/.test(folder));
+    const items = fs.readdirSync(downloadsPath);
+    const targetFolder = items.find((item) => {
+        const itemPath = path.join(downloadsPath, item);
+        return /\d{6}/.test(item) && fs.statSync(itemPath).isDirectory();
+    });
+
     console.log("Target Folder: ", targetFolder);  // New line
+
+
 
     if (!targetFolder) {
         console.log('Target folder not found.');
