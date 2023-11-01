@@ -10,6 +10,8 @@ const chokidar = require('chokidar');
 
 
 
+// global constants
+
 
 const downloadsPath = path.join(os.homedir(), 'Downloads');
 const desktopPath = path.join(os.homedir(), 'Desktop');
@@ -213,43 +215,59 @@ watcher
 
 
 const main = async () => {
-
-    const items = fs.readdirSync(downloadsPath);
-    const targetFolder = items.find((item) => {
-        const itemPath = path.join(downloadsPath, item);
-        return /\d{6}/.test(item) && fs.statSync(itemPath).isDirectory();
-    });
-
-    console.log("Target Folder: ", targetFolder);  // New line
-
-
-
-    if (!targetFolder) {
+    // 1. Find Target Folder
+    const targetFolderPath = findTargetFolder(downloadsPath);
+    if (!targetFolderPath) {
         console.log('Target folder not found.');
         return;
     }
 
-    const targetFolderPath = path.join(downloadsPath, targetFolder);
-    moveAndRenameFilesFromDownloads(targetFolderPath);   // This will move and then rename will be handled by your processFiles function
-    moveScreenshotToTargetFolder(targetFolderPath);  // New line
+    // 2. Move and Rename Files
+    moveAndRenameFiles(targetFolderPath);
+
+    // 3. Process Folder Contents
     processFiles(targetFolderPath);
 
-    // Path to the PDF file
-    const pdfPath = path.join(targetFolderPath, "3. Tax Invoice.pdf");
+    // 4. Rename the Target Folder using PDF data
+    renameTargetFolderUsingPDF(targetFolderPath);
 
+    // 5. Annotate PDFs
+    try {
+        await annotatePDF(targetFolderPath);
+    } catch (err) {
+        console.error('Failed to annotate PDF:', err);
+    }
+}
+
+// Helper Function: Find Target Folder
+const findTargetFolder = (dirPath) => {
+    const items = fs.readdirSync(dirPath);
+    const targetFolder = items.find(item => {
+        const itemPath = path.join(dirPath, item);
+        return /\d{6}/.test(item) && fs.statSync(itemPath).isDirectory();
+    });
+    return targetFolder ? path.join(dirPath, targetFolder) : null;
+}
+
+// Helper Function: Move and Rename Files
+const moveAndRenameFiles = (folderPath) => {
+    moveAndRenameFilesFromDownloads(folderPath);
+    moveScreenshotToTargetFolder(folderPath);
+}
+
+// Helper Function: Rename the Target Folder using data from the PDF
+const renameTargetFolderUsingPDF = async (folderPath) => {
+    const pdfPath = path.join(folderPath, "3. Tax Invoice.pdf");
     const customerName = await readPDF(pdfPath);
     const folderRegex = /\d{6}/;
-    const match = targetFolder.match(folderRegex);
-    // console.log("Extracted Customer Name:", customerName);
-    // console.log("Regex Match:", match);
-
+    const match = folderPath.match(folderRegex);
 
     if (customerName && match) {
         const newFolderName = `${customerName} (${match[0]})`;
         const newFolderPath = path.join(downloadsPath, newFolderName);
 
         try {
-            fs.renameSync(targetFolderPath, newFolderPath);
+            fs.renameSync(folderPath, newFolderPath);
             console.log(`Folder renamed to: ${newFolderName}`);
         } catch (err) {
             console.error("Error renaming folder:", err);
@@ -257,14 +275,8 @@ const main = async () => {
     } else {
         console.warn("Either customerName or match is missing. Folder not renamed.");
     }
-
-    try {
-        await annotatePDF(targetFolderPath);  // Annotate the PDF
-    } catch (err) {
-        console.error('Failed to annotate PDF:', err);
-    }
-
-
-
 }
+
+// Execute the main function
 main();
+
