@@ -4,6 +4,8 @@ const fsPromises = require('fs').promises;
 const path = require('path');
 const os = require('os');
 const pdfParse = require('pdf-parse');
+const chokidar = require('chokidar');
+
 
 
 const downloadsPath = path.join(os.homedir(), 'Downloads');
@@ -52,6 +54,30 @@ const moveScreenshotToTargetFolder = (targetFolderPath) => {
         }
     }
 };
+
+// function to move the compliance form and calculation output to the target folder:
+
+const moveAndRenameFilesFromDownloads = (targetFolderPath) => {
+    const filesToMove = ['Compliance Form.pdf', 'Calculation Output (HEERs).pdf'];
+
+    filesToMove.forEach(file => {
+        const oldPath = path.join(downloadsPath, file);
+        const newPath = path.join(targetFolderPath, file);
+
+        // Move the file
+        if (fs.existsSync(oldPath)) {
+            try {
+                fs.renameSync(oldPath, newPath);
+                console.log(`Moved ${file} to ${targetFolderPath}`);
+            } catch (err) {
+                console.error(`Error moving ${file}: ${err}`);
+            }
+        } else {
+            console.warn(`File ${file} does not exist in the Downloads folder.`);
+        }
+    });
+};
+
 
 // function to process names of files to correct version
 const processFiles = (folderPath) => {
@@ -151,6 +177,26 @@ const readPDF = async (pdfPath) => {
     return null;
 };
 
+// monitor downlooads folder to annotate the files automatically
+
+const watcher = chokidar.watch(downloadsPath, {
+    ignored: /(^|[\/\\])\../, // ignore dotfiles
+    persistent: true,
+    depth: 99, // depth to watch subdirectories, can be adjusted based on your needs
+    awaitWriteFinish: true, // waits until file size does not change for a while before firing event
+});
+
+watcher
+    .on('add', path => {
+        console.log(`File ${path} has been added.`);
+        main();
+    })
+
+    .on('unlink', path => {
+        console.log(`File ${path} has been removed.`);
+        main();
+    });
+
 const main = async () => {
 
     const folders = fs.readdirSync(downloadsPath);
@@ -163,6 +209,7 @@ const main = async () => {
     }
 
     const targetFolderPath = path.join(downloadsPath, targetFolder);
+    moveAndRenameFilesFromDownloads(targetFolderPath);   // This will move and then rename will be handled by your processFiles function
     moveScreenshotToTargetFolder(targetFolderPath);  // New line
     processFiles(targetFolderPath);
 
