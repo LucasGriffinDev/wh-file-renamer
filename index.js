@@ -8,6 +8,12 @@ const chokidar = require('chokidar');
 
 // module imports
 
+// checking function imports
+const checkAndCreateLogFile = require('./checking_functions/checkAndCreateLogFile');
+const extractInvoiceDate = require('./checking_functions/extractPDFData');
+const extractNominationDate = require('./checking_functions/extractNominationDate');
+const updateNominationInAutomatedCheckingFile = require('./checking_functions/updateAutomatedCheckingFile');
+
 
 
 // global constants
@@ -197,15 +203,16 @@ watcher
     .on('add', path => {
         if (!path.endsWith('.zip')) {
             console.log(`File ${path} has been added.`);
+            checkAndCreateLogFile(downloadsPath);  // Call the helper function here
             main();
         } else {
             console.log(`Ignoring .zip file: ${path}`);
         }
     })
-
     .on('unlink', path => {
         if (!path.endsWith('.zip')) {
             console.log(`File ${path} has been removed.`);
+            checkAndCreateLogFile(downloadsPath);  // Call the helper function here
             main();
         } else {
             console.log(`Ignoring .zip file: ${path}`);
@@ -214,7 +221,11 @@ watcher
 
 
 
+
 const main = async () => {
+
+
+    // renaming functions
     // 1. Find Target Folder
     const targetFolderPath = findTargetFolder(downloadsPath);
     if (!targetFolderPath) {
@@ -237,6 +248,21 @@ const main = async () => {
     } catch (err) {
         console.error('Failed to annotate PDF:', err);
     }
+
+    // checking functions
+
+    // 6. Extract invoice date
+    const pdfPath = path.join(targetFolderPath, "3. Tax Invoice.pdf");
+    const invoiceDate = await extractInvoiceDate(pdfPath);
+
+    // extracting Nomination fomr date
+
+    const nominationPdfPath = path.join(targetFolderPath, "1. Nomination Form.pdf");
+    const nominationDate = await extractNominationDate(nominationPdfPath);
+
+    // Update automated_checking.txt
+    updateNominationInAutomatedCheckingFile(nominationDate);
+
 }
 
 // Helper Function: Find Target Folder
@@ -275,6 +301,9 @@ const renameTargetFolderUsingPDF = async (folderPath) => {
     } else {
         console.warn("Either customerName or match is missing. Folder not renamed.");
     }
+
+
+
 }
 
 // Execute the main function

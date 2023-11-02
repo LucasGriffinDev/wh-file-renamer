@@ -1,0 +1,22 @@
+How I would re-do this app.
+
+//library imports
+
+//global constants
+
+
+// array for all the pdf names
+
+
+//array for holding validation checking data
+
+//renaming function imports
+
+//pdf data extraction imports
+
+const main = async () => {
+
+}
+
+
+main ();
