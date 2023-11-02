@@ -1,0 +1,30 @@
+How I would re-do this app.
+
+//library imports
+
+//global constants
+
+e.g.
+
+const downloadsPath = path.join(os.homedir(), 'Downloads');
+const desktopPath = path.join(os.homedir(), 'Desktop');
+
+// array for all the pdf names
+
+
+//array for holding validation checking data
+
+//renaming function imports
+
+//pdf data extraction imports
+
+const main = async () => {
+
+}
+
+
+main ();
+
+
+would the if statments be better put inside the functions in their seperate files
+or should they be in the main() so I can see when certain function are or arne't called depending on the presence of certain data.
