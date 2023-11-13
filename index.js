@@ -53,7 +53,7 @@ async function annotatePDF(targetFolderPath) {
 // Function to move screenshot from Desktop to Target Folder
 const moveScreenshotToTargetFolder = (targetFolderPath) => {
     const desktopItems = fs.readdirSync(desktopPath);
-    const screenshot = desktopItems.find((item) => item.includes('Screen Shot'));
+    const screenshot = desktopItems.find((item) => item.includes('Screenshot'));
 
     if (screenshot) {
         const oldPath = path.join(desktopPath, screenshot);
@@ -134,7 +134,7 @@ const processImageFolder = (folderPath) => {
 // hash map of renaming conventions
 const renameFile = (item, itemPath, folderPath) => {
     const renameMap = [
-        { condition: 'Screen Shot', newName: '0. Nomination form to OES' },
+        { condition: 'Screenshot', newName: '0. Nomination form to OES' },
         { condition: 'nominationForm', newName: '1. Nomination Form' },
         { condition: 'Nomination Form', newName: '1. Nomination Form' },
         { condition: 'siteAssessment', newName: '2. Site Assessment' },
@@ -246,11 +246,11 @@ const main = async () => {
     renameTargetFolderUsingPDF(targetFolderPath);
 
     // 5. Annotate PDFs
-    // try {
-    //     await annotatePDF(targetFolderPath);
-    // } catch (err) {
-    //     console.error('Failed to annotate PDF:', err);
-    // }
+    try {
+        await annotatePDF(targetFolderPath);
+    } catch (err) {
+        console.error('Failed to annotate PDF:', err);
+    }
 
     // checking functions
 
