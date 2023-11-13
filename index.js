@@ -136,11 +136,14 @@ const renameFile = (item, itemPath, folderPath) => {
     const renameMap = [
         { condition: 'Screen Shot', newName: '0. Nomination form to OES' },
         { condition: 'nominationForm', newName: '1. Nomination Form' },
+        { condition: 'Nomination Form', newName: '1. Nomination Form' },
         { condition: 'siteAssessment', newName: '2. Site Assessment' },
+        { condition: 'SA', newName: '2. Site Assessment' },
         { condition: 'taxInvoice', newName: '3. Tax Invoice' },
         { condition: 'receipt', newName: '4. Proof of Payment' },
         { condition: 'Coc', newName: '5. CoC' },
         { condition: 'postImplementation', newName: '6. Post Implementation' },
+        { condition: 'PID', newName: '6. Post Implementation' },
         { condition: 'image2', newName: '7. Proof of Decommission', moveToParent: true },
         { condition: 'Compliance Form', newName: '0. Compliance Form.pdf' },
         { condition: 'Calculation Output', newName: '0. Calculation Output (HEERs)' },
@@ -243,11 +246,11 @@ const main = async () => {
     renameTargetFolderUsingPDF(targetFolderPath);
 
     // 5. Annotate PDFs
-    try {
-        await annotatePDF(targetFolderPath);
-    } catch (err) {
-        console.error('Failed to annotate PDF:', err);
-    }
+    // try {
+    //     await annotatePDF(targetFolderPath);
+    // } catch (err) {
+    //     console.error('Failed to annotate PDF:', err);
+    // }
 
     // checking functions
 
