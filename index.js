@@ -38,7 +38,7 @@ async function annotatePDF(targetFolderPath) {
         firstPage.drawRectangle({
             x: 300,
             y: 419,
-            width: 22,
+            width: 30,
             height: 19,
             color: grayRectangle,
         });
@@ -250,11 +250,11 @@ const main = async () => {
     renameTargetFolderUsingPDF(targetFolderPath);
 
     // 5. Annotate PDFs
-    // try {
-    //     await annotatePDF(targetFolderPath);
-    // } catch (err) {
-    //     console.error('Failed to annotate PDF:', err);
-    // }
+    try {
+        await annotatePDF(targetFolderPath);
+    } catch (err) {
+        console.error('Failed to annotate PDF:', err);
+    }
 
     // checking functions
 
