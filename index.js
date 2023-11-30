@@ -139,6 +139,7 @@ const renameFile = (item, itemPath, folderPath) => {
         { condition: '0._Nomination_form_to_OES', newName: '0. Nomination form to OES' },
         { condition: '0._Nomination_Form_sent_to_OES', newName: '0. Nomination form to OES' },
         { condition: '0._Nomination_to_OES', newName: '0. Nomination form to OES' },
+        { condition: '0._', newName: '0. Nomination form to OES' },
         { condition: 'nominationForm', newName: '1. Nomination Form' },
         { condition: 'Nomination Form', newName: '1. Nomination Form' },
         { condition: '1._Nomination_Form', newName: '1. Nomination Form' },
