@@ -19,7 +19,7 @@ const updateNominationInAutomatedCheckingFile = require('./checking_functions/up
 // global constants
 
 
-const downloadsPath = path.join(os.homedir(), 'Downloads');
+const downloadsPath = path.join(os.homedir(), 'Downloads/chromagen_test/');
 const desktopPath = path.join(os.homedir(), 'Desktop');
 
 

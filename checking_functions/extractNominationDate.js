@@ -9,7 +9,7 @@ const extractNominationDate = async (pdfPath) => {
     const data = await pdfParse(dataBuffer);
 
     // Use a regular expression to find the date pattern after the last "date"
-    const regex = /date.*(\d{4}\/\d{2}\/\d{2})/;
+    const regex = /date.*(\d{4}\/\d{2}\/\d{2})/g;
     const matches = data.text.matchAll(regex);
 
     let lastMatch;
